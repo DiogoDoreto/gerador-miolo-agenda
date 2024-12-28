@@ -94,7 +94,6 @@ export async function generatePdf(config: Config) {
   doc = await PDFDocument.create();
   font = await doc.embedFont(StandardFonts.Helvetica);
   const pages = generatePages(config);
-  console.log('pages', pages);
   renderPages(pages);
   return doc.saveAsBase64({ dataUri: true });
 }
