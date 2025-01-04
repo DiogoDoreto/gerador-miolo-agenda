@@ -11,10 +11,10 @@
   <Tabs tabStyle="underline">
     <TabItem open>
       <div slot="title" class="flex items-center gap-2">
-        <BookOpenOutline />
-        Página
+        <ClipboardOutline />
+        Dados
       </div>
-      <FormPage />
+      <FormData />
     </TabItem>
     <TabItem>
       <div slot="title" class="flex items-center gap-2">
@@ -25,10 +25,10 @@
     </TabItem>
     <TabItem>
       <div slot="title" class="flex items-center gap-2">
-        <ClipboardOutline />
-        Dados
+        <BookOpenOutline />
+        Página
       </div>
-      <FormData />
+      <FormPage />
     </TabItem>
   </Tabs>
 </div>
