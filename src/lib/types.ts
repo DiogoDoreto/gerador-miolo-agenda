@@ -1,3 +1,5 @@
+import type { Locale } from 'date-fns';
+
 export type PageSide = 'left' | 'right';
 
 export interface TableCell {
@@ -31,13 +33,33 @@ export enum Alignment {
   SE,
 }
 
-export interface Textbox {
+export interface Box {
+  width?: number;
+  height?: number;
+}
+
+export interface Textbox extends Box {
   kind: 'textbox';
   alignment: Alignment;
   text: string;
+  fitText?: boolean;
 }
 
-export type Content = string | Table | Textbox | Content[];
+export interface Calendar {
+  kind: 'calendar';
+  year: number;
+  /** starting in 1, as it should */
+  month?: number;
+}
+
+export interface Flex {
+  kind: 'flex';
+  direction: 'column' | 'row';
+  gap?: number;
+  contents: Content[];
+}
+
+export type Content = string | Flex | Table | Textbox | Calendar | Content[];
 
 export interface Page {
   side: PageSide;
@@ -83,7 +105,9 @@ export interface Config {
     };
   };
   data: {
+    locale: Locale;
     year: number;
+    showCalendarPages: boolean;
     innerTemplateConfig?: InnerTemplateConfig;
   };
 }

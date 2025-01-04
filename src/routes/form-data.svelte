@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Label, Select } from 'flowbite-svelte';
+  import { Checkbox, Label, Select } from 'flowbite-svelte';
   import FormAgendamento3x3 from './form-agendamento3x3.svelte';
   import { config } from './form-state.svelte.js';
 
@@ -19,6 +19,8 @@
     Ano:
     <Select items={yearList} bind:value={config.data.year} />
   </Label>
+
+  <Checkbox bind:checked={config.data.showCalendarPages}>Páginas de calendário</Checkbox>
 
   <Label>
     Template do miolo

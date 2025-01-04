@@ -1,5 +1,6 @@
 import type { Config } from '$lib/types.js';
 import { mm_to_points } from '$lib/units.js';
+import { ptBR } from 'date-fns/locale';
 import { PageSizes } from 'pdf-lib';
 
 export const config: Config = $state({
@@ -35,5 +36,7 @@ export const config: Config = $state({
   },
   data: {
     year: new Date().getUTCFullYear(),
+    showCalendarPages: true,
+    locale: ptBR,
   },
 });

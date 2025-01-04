@@ -9,18 +9,24 @@ import {
 import { hex_to_rgb } from './colors.js';
 import {
   Alignment,
+  type Calendar,
   type Config,
   type Content,
+  type Flex,
   type MarginValues,
   type Page,
   type PageSide,
   type RecursivePages,
   type Table,
   type TableCell,
+  type TableColumn,
   type Textbox,
 } from './types.js';
 import { agendamento3x3 } from './templates/agendamento3x3.js';
 import { mm_to_points } from './units.js';
+import { format, getWeekOfMonth } from 'date-fns';
+import { daysOfMonth, wholeWeek } from './dates.js';
+import { capitalize } from './strings.js';
 
 let font: PDFFont;
 
@@ -79,13 +85,22 @@ function renderPage(page: Page) {
   }
 }
 
-function generatePages(config: Config) {
+function generatePages(config: Config): RecursivePages {
   const { innerTemplateConfig } = config.data;
-  if (!innerTemplateConfig) return [];
-  if (innerTemplateConfig.kind === 'agendamento3x3') {
-    return agendamento3x3(config.data.year, innerTemplateConfig);
+  const pages: RecursivePages = [];
+  if (config.data.showCalendarPages) {
+    pages.push(
+      { side: 'left', contents: { kind: 'calendar', year: config.data.year } },
+      { side: 'right', contents: { kind: 'calendar', year: 1 + config.data.year } }
+    );
   }
-  throw new Error('unkown kind: ' + innerTemplateConfig.kind);
+  if (!innerTemplateConfig) return pages;
+  if (innerTemplateConfig.kind === 'agendamento3x3') {
+    pages.push(agendamento3x3(config.data.year, innerTemplateConfig));
+  } else {
+    throw new Error('unkown kind: ' + innerTemplateConfig.kind);
+  }
+  return pages;
 }
 
 export async function generatePdf(config: Config) {
@@ -94,7 +109,12 @@ export async function generatePdf(config: Config) {
   doc = await PDFDocument.create();
   font = await doc.embedFont(StandardFonts.Helvetica);
   const pages = generatePages(config);
-  renderPages(pages);
+  try {
+    renderPages(pages);
+  } catch (err) {
+    console.error('Error while rendering pages', pages);
+    throw err;
+  }
   return doc.saveAsBase64({ dataUri: true });
 }
 
@@ -108,11 +128,17 @@ function renderContents(area: Area, contents: Content) {
     renderTextbox(area, { kind: 'textbox', text: contents, alignment: Alignment.Center });
   } else
     switch (contents.kind) {
+      case 'flex':
+        renderFlex(area, contents);
+        break;
       case 'textbox':
         renderTextbox(area, contents);
         break;
       case 'table':
         renderTable(area, contents);
+        break;
+      case 'calendar':
+        renderCalendar(area, contents);
         break;
       default:
         throw new Error(`unknown content: ${JSON.stringify(contents)}`);
@@ -130,7 +156,7 @@ function renderTextbox(area: Area, contents: Textbox) {
           : TextAlignment.Center,
     bounds: area,
     font,
-    fontSize: 10,
+    fontSize: contents.fitText ? undefined : 10,
   });
   currentPage.drawText(contents.text, {
     ...layout.bounds,
@@ -188,4 +214,141 @@ function renderTable(area: Area, contents: Table) {
 
 function isTableCell(cell?: Content | TableCell): cell is TableCell {
   return !!cell && !Array.isArray(cell) && typeof cell === 'object' && cell.kind === 'table-cell';
+}
+
+function renderCalendar(area: Area, c: Calendar) {
+  if (c.month) {
+    renderCalendarMonth(area, c.year, c.month);
+  } else {
+    renderCalendarYear(area, c.year);
+  }
+}
+
+function renderCalendarYear(area: Area, year: number) {
+  const makeMonth = (month: number): Calendar => ({ kind: 'calendar', year, month });
+  renderFlex(area, {
+    kind: 'flex',
+    direction: 'column',
+    gap: 5,
+    contents: [
+      {
+        kind: 'textbox',
+        height: 20,
+        alignment: Alignment.E,
+        fitText: true,
+        text: year.toString(),
+      },
+      ...[
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+        [10, 11, 12],
+      ].map((months) => ({
+        kind: 'flex',
+        direction: 'row',
+        gap: 10,
+        contents: months.map(makeMonth),
+      })),
+    ],
+  });
+}
+
+function renderCalendarMonth(area: Area, year: number, month: number) {
+  let lastWeek: TableColumn['contents'] = [];
+  const rows: Table['columns'] = [
+    wholeWeek(cfg.data.locale).map((d) => format(d, 'EEEEE', { locale: cfg.data.locale })),
+    lastWeek,
+  ];
+  let lastWom = 1;
+  for (const d of daysOfMonth(year, month - 1)) {
+    const wom = getWeekOfMonth(d, { locale: cfg.data.locale });
+    if (lastWom !== wom) {
+      lastWom = wom;
+      lastWeek = [];
+      rows.push(lastWeek);
+    }
+    lastWeek[(7 + d.getDay() - (cfg.data.locale.options?.weekStartsOn ?? 0)) % 7] = d
+      .getDate()
+      .toString();
+  }
+  renderFlex(area, {
+    kind: 'flex',
+    direction: 'column',
+    gap: 5,
+    contents: [
+      {
+        kind: 'textbox',
+        alignment: Alignment.E,
+        fitText: true,
+        height: 15,
+        text: capitalize(format(new Date(year, month - 1), 'LLLL', { locale: cfg.data.locale })),
+      },
+      {
+        kind: 'table',
+        rowCount: rows.length,
+        columnCount: 7,
+        columns: Array.from({ length: 7 }, (_, idx) => rows.map((row) => row[idx])),
+      },
+    ],
+  });
+}
+
+function renderFlex(area: Area, { direction, contents, gap = 0 }: Flex) {
+  const sizeProp = direction === 'column' ? 'height' : 'width';
+  const offsetProp = direction === 'column' ? 'y' : 'x';
+  const calculateSize = direction === 'column' ? calculateBoxHeight : calculateBoxWidth;
+  const contentSizes = contents.map(calculateSize);
+  const totalFixedSize = contentSizes.reduce((sum, size) => sum + size, 0);
+  const totalGapSize = gap * (contents.length - 1);
+  const totalFlexSize = area[sizeProp] - totalFixedSize - totalGapSize;
+  const flexItemsCount = contentSizes.filter((h) => h === 0).length;
+  const flexSize = flexItemsCount ? totalFlexSize / flexItemsCount : 0;
+  let offsetAcc = area[offsetProp];
+  function renderItem(i: number) {
+    const c = contents[i];
+    const contentSize = contentSizes[i] || flexSize;
+    renderContents({ ...area, [sizeProp]: contentSize, [offsetProp]: offsetAcc }, c);
+    offsetAcc += contentSize + gap;
+  }
+  if (direction === 'column') {
+    for (let i = contents.length - 1; i >= 0; i--) {
+      renderItem(i);
+    }
+  } else {
+    for (let i = 0; i < contents.length; i++) {
+      renderItem(i);
+    }
+  }
+}
+
+function calculateBoxWidth(c: Content): number {
+  if (Array.isArray(c)) {
+    return Math.max(...c.map(calculateBoxWidth));
+  }
+  if (typeof c !== 'object' || c.kind === 'flex') {
+    return 0;
+  }
+  if ('width' in c && c.width) {
+    return c.width;
+  }
+  if ('contents' in c && c.contents) {
+    return calculateBoxWidth(c.contents);
+  }
+  return 0;
+}
+
+function calculateBoxHeight(c: Content): number {
+  if (Array.isArray(c)) {
+    return Math.max(...c.map(calculateBoxHeight));
+  }
+  if (typeof c !== 'object' || c.kind === 'flex') {
+    return 0;
+  }
+  if ('height' in c && c.height) {
+    return c.height;
+  }
+  if ('contents' in c && c.contents) {
+    return calculateBoxHeight(c.contents);
+  }
+  return 0;
 }

@@ -94,7 +94,16 @@ function makeObsColumn(colspan: number): Table['columns'][0] {
 }
 
 function generatePagesForMonth(days: Date[]) {
-  const pages: Page[] = [];
+  const pages: Page[] = [
+    {
+      side: 'right',
+      contents: {
+        kind: 'calendar',
+        year: days[0].getUTCFullYear(),
+        month: days[0].getUTCDate(),
+      },
+    },
+  ];
   let currentPage: Page;
   let currentTable: Table;
   const newPage = (side: PageSide) => {
