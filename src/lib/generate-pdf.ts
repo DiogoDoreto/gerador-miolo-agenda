@@ -1,3 +1,4 @@
+import { format, getWeekOfMonth } from 'date-fns';
 import {
   layoutSinglelineText,
   PDFDocument,
@@ -7,6 +8,9 @@ import {
   type PDFPage,
 } from 'pdf-lib';
 import { hex_to_rgb } from './colors.js';
+import { daysOfMonth, wholeWeek } from './dates.js';
+import { generatePages } from './generate-pages.js';
+import { capitalize } from './strings.js';
 import {
   Alignment,
   type Calendar,
@@ -22,11 +26,7 @@ import {
   type TableColumn,
   type Textbox,
 } from './types.js';
-import { agendamento3x3 } from './templates/agendamento3x3.js';
 import { mm_to_points } from './units.js';
-import { format, getWeekOfMonth } from 'date-fns';
-import { daysOfMonth, wholeWeek } from './dates.js';
-import { capitalize } from './strings.js';
 
 let font: PDFFont;
 
@@ -83,24 +83,6 @@ function renderPage(page: Page) {
     );
     renderContents(area, page.contents);
   }
-}
-
-function generatePages(config: Config): RecursivePages {
-  const { innerTemplateConfig } = config.data;
-  const pages: RecursivePages = [];
-  if (config.data.showCalendarPages) {
-    pages.push(
-      { side: 'left', contents: { kind: 'calendar', year: config.data.year } },
-      { side: 'right', contents: { kind: 'calendar', year: 1 + config.data.year } }
-    );
-  }
-  if (!innerTemplateConfig) return pages;
-  if (innerTemplateConfig.kind === 'agendamento3x3') {
-    pages.push(agendamento3x3(config.data.year, innerTemplateConfig));
-  } else {
-    throw new Error('unkown kind: ' + innerTemplateConfig.kind);
-  }
-  return pages;
 }
 
 export async function generatePdf(config: Config) {

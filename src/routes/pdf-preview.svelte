@@ -3,6 +3,7 @@
   import { Alert, Card, Spinner } from 'flowbite-svelte';
   import { config } from './form-state.svelte.js';
   import { BugOutline } from 'flowbite-svelte-icons';
+  import type { Config } from '$lib/types.js';
 
   interface Props {
     class?: string;
@@ -23,12 +24,12 @@
           src = await generatePdf(cfg);
         } catch (err) {
           errorMsg = (err as Error).message;
-          console.error(err)
-          console.error('config', cfg)
+          console.error(err);
+          console.error('config', cfg);
         }
         processing = false;
       }, 500);
-    })($state.snapshot(config));
+    })($state.snapshot(config) as Config);
     return () => clearTimeout(t);
   });
 </script>

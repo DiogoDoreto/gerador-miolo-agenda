@@ -11,7 +11,7 @@ let timesheetRows: (TableCell | undefined)[];
 
 export function agendamento3x3(year: number, cfg: Agendamento3x3Config) {
   timesheetRows = makeTimesheetRows(cfg);
-  return date_list(year).map(generatePagesForMonth);
+  return date_list(year).map(generatePagesForMonth).flat();
 }
 
 function makeTimesheetRows({ timesheet, rowsPerTime }: Agendamento3x3Config) {

@@ -1,4 +1,9 @@
 <script lang="ts">
+  import { generatePages } from '$lib/generate-pages.js';
+  import { renderCanvas } from '$lib/render-canvas.js';
+  import type { Config } from '$lib/types.js';
+  import { config } from './form-state.svelte.js';
+
   interface Props {
     class?: string;
   }
@@ -9,12 +14,17 @@
   let size = $state({ width: 0, height: 0 });
 
   $effect(() => {
-    const ctx = canvas?.getContext('2d');
-    if (!ctx || !canvas) return;
-    canvas.width = size.width;
-    canvas.height = size.height;
-    ctx.fillStyle = 'black';
-    ctx.fillRect(5, size.height - 105, 100, 100);
+    const t = (function (cfg) {
+      return setTimeout(() => {
+        const ctx = canvas?.getContext('2d');
+        if (!ctx || !canvas) return;
+        canvas.width = size.width;
+        canvas.height = size.height;
+        const pages = generatePages(cfg);
+        renderCanvas(ctx, cfg, [pages[1], pages[2]]);
+      }, 500);
+    })($state.snapshot(config) as Config);
+    return () => clearTimeout(t);
   });
 
   $effect(() => {
