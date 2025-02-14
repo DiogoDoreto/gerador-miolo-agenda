@@ -1,18 +1,19 @@
-import type { Config, Page } from './types.js';
+import {
+  Alignment,
+  type Area,
+  type Calendar,
+  type Config,
+  type Content,
+  type Coordinate,
+  type Flex,
+  type MarginValues,
+  type Page,
+  type Table,
+} from './types.js';
 
 let ctx: CanvasRenderingContext2D;
 let cfg: Config;
 let scale = 1;
-
-interface Coordinate {
-  x: number;
-  y: number;
-}
-
-interface Area extends Coordinate {
-  width: number;
-  height: number;
-}
 
 export function renderCanvas(context: CanvasRenderingContext2D, config: Config, pages: Page[]) {
   ctx = context;
@@ -58,6 +59,12 @@ function renderPage(page: Page, anchor: Coordinate) {
     height: cfg.page.size[1] * scale,
   };
   renderPageSheet(pageArea);
+
+  if (page.contents) {
+    const margins = cfg.page.margins.leftPage; // FIXME hard-coded left page for now
+    const innerArea = applyMarginToArea(pageArea, margins);
+    renderContents(innerArea, page.contents);
+  }
 }
 
 function renderPageSheet({ x, y, width, height }: Area) {
@@ -73,4 +80,56 @@ function renderPageSheet({ x, y, width, height }: Area) {
   ctx.fillStyle = 'white';
   ctx.fill();
   ctx.restore();
+}
+
+function applyMarginToArea(area: Area, margins: MarginValues): Area {
+  return {
+    x: area.x + margins.left,
+    y: area.y + margins.top,
+    width: area.width - margins.right - margins.left,
+    height: area.height - margins.bottom - margins.top,
+  };
+}
+
+function renderContents(area: Area, contents: Content) {
+  if (Array.isArray(contents)) {
+    for (const c of contents) {
+      renderContents(area, c);
+    }
+    return;
+  } else if (typeof contents === 'string') {
+    renderTextbox(area, { kind: 'textbox', text: contents, alignment: Alignment.Center });
+  } else
+    switch (contents.kind) {
+      case 'flex':
+        renderFlex(area, contents);
+        break;
+      case 'textbox':
+        renderTextbox(area, contents);
+        break;
+      case 'table':
+        renderTable(area, contents);
+        break;
+      case 'calendar':
+        renderCalendar(area, contents);
+        break;
+      default:
+        throw new Error(`unknown content: ${JSON.stringify(contents)}`);
+    }
+}
+
+function renderTextbox(area: Area, arg1: { kind: string; text: string; alignment: Alignment }) {
+  console.log('renderTextbox not implemented.');
+}
+
+function renderFlex(area: Area, contents: Flex) {
+  console.log('renderFlex not implemented.');
+}
+
+function renderTable(area: Area, contents: Table) {
+  console.log('renderTable not implemented.');
+}
+
+function renderCalendar(area: Area, contents: Calendar) {
+  console.log('renderCalendar not implemented.');
 }

@@ -13,6 +13,7 @@ import { generatePages } from './generate-pages.js';
 import { capitalize } from './strings.js';
 import {
   Alignment,
+  type Area,
   type Calendar,
   type Config,
   type Content,
@@ -49,13 +50,6 @@ let lastPageSide: PageSide | null = null;
 function addPage() {
   currentPage = doc.addPage(cfg.page.size);
   lastPageSide = lastPageSide === 'left' || !lastPageSide ? 'right' : 'left';
-}
-
-interface Area {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 function applyMarginToArea(area: Area, margins: MarginValues) {

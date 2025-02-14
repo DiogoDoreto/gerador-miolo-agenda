@@ -1,6 +1,6 @@
 # Layout and Rendering
 
-- [ ] **Implement `renderContents` function for Canvas**
+- [x] **Implement `renderContents` function for Canvas**
   - Render different types of content (string, flex, textbox, table, calendar) in the canvas.
   
 - [ ] **Implement `renderTextbox` for Canvas**

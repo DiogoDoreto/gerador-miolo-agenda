@@ -68,6 +68,16 @@ export interface Page {
 
 export type RecursivePages = Page | RecursivePages[];
 
+export interface Coordinate {
+  x: number;
+  y: number;
+}
+
+export interface Area extends Coordinate {
+  width: number;
+  height: number;
+}
+
 export interface MarginValues {
   top: number;
   right: number;
