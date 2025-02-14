@@ -1,13 +1,4 @@
 import { format, getWeekOfMonth } from 'date-fns';
-import {
-  layoutSinglelineText,
-  PDFDocument,
-  PDFFont,
-  StandardFonts,
-  TextAlignment,
-  type PDFPage,
-} from 'pdf-lib';
-import { hex_to_rgb } from './colors.js';
 import { daysOfMonth, wholeWeek } from './dates.js';
 import { generatePages } from './generate-pages.js';
 import { capitalize } from './strings.js';
@@ -20,16 +11,14 @@ import {
   type Flex,
   type MarginValues,
   type Page,
-  type PageSide,
   type RecursivePages,
   type Table,
   type TableCell,
   type TableColumn,
-  type Textbox,
 } from './types.js';
 import { mm_to_points } from './units.js';
-
-let font: PDFFont;
+import { PdfRenderer } from './renderer/pdf.js';
+import type { BaseRenderer } from './renderer/base.js';
 
 function renderPages(pages: RecursivePages) {
   if (Array.isArray(pages)) {
@@ -41,37 +30,19 @@ function renderPages(pages: RecursivePages) {
   }
 }
 
-let doc: PDFDocument;
-let currentPage: PDFPage;
+let renderer: BaseRenderer;
 let cfg: Config;
 
-let lastPageSide: PageSide | null = null;
-
-function addPage() {
-  currentPage = doc.addPage(cfg.page.size);
-  lastPageSide = lastPageSide === 'left' || !lastPageSide ? 'right' : 'left';
-}
-
-function applyMarginToArea(area: Area, margins: MarginValues) {
-  return {
-    x: area.x + margins.left,
-    y: area.y + margins.bottom,
-    width: area.width - margins.right - margins.left,
-    height: area.height - margins.top - margins.bottom,
-  };
-}
-
 function renderPage(page: Page) {
-  addPage();
-  if (lastPageSide !== page.side) addPage();
-  const margins = lastPageSide === 'left' ? cfg.page.margins.leftPage : cfg.page.margins.rightPage;
+  renderer.createPage(page);
+  const margins = page.side === 'left' ? cfg.page.margins.leftPage : cfg.page.margins.rightPage;
   if (page.contents) {
-    const area: Area = applyMarginToArea(
+    const area = renderer.applyMarginToArea(
       {
         x: 0,
         y: 0,
-        width: currentPage.getWidth(),
-        height: currentPage.getHeight(),
+        width: cfg.page.size[0],
+        height: cfg.page.size[1],
       },
       margins
     );
@@ -81,9 +52,9 @@ function renderPage(page: Page) {
 
 export async function generatePdf(config: Config) {
   cfg = config;
-  lastPageSide = null;
-  doc = await PDFDocument.create();
-  font = await doc.embedFont(StandardFonts.Helvetica);
+  const pdf = new PdfRenderer(config);
+  await pdf.initialize();
+  renderer = pdf;
   const pages = generatePages(config);
   try {
     renderPages(pages);
@@ -91,7 +62,7 @@ export async function generatePdf(config: Config) {
     console.error('Error while rendering pages', pages);
     throw err;
   }
-  return doc.saveAsBase64({ dataUri: true });
+  return pdf.doc?.saveAsBase64({ dataUri: true });
 }
 
 function renderContents(area: Area, contents: Content) {
@@ -101,14 +72,18 @@ function renderContents(area: Area, contents: Content) {
     }
     return;
   } else if (typeof contents === 'string') {
-    renderTextbox(area, { kind: 'textbox', text: contents, alignment: Alignment.Center });
+    renderer.renderTextbox(area, {
+      kind: 'textbox',
+      text: contents,
+      alignment: Alignment.Center,
+    });
   } else
     switch (contents.kind) {
       case 'flex':
         renderFlex(area, contents);
         break;
       case 'textbox':
-        renderTextbox(area, contents);
+        renderer.renderTextbox(area, contents);
         break;
       case 'table':
         renderTable(area, contents);
@@ -119,25 +94,6 @@ function renderContents(area: Area, contents: Content) {
       default:
         throw new Error(`unknown content: ${JSON.stringify(contents)}`);
     }
-}
-
-function renderTextbox(area: Area, contents: Textbox) {
-  // TODO alignment
-  const layout = layoutSinglelineText(contents.text, {
-    alignment:
-      contents.alignment === Alignment.W
-        ? TextAlignment.Left
-        : contents.alignment === Alignment.E
-          ? TextAlignment.Right
-          : TextAlignment.Center,
-    bounds: area,
-    font,
-    fontSize: contents.fitText ? undefined : 10,
-  });
-  currentPage.drawText(contents.text, {
-    ...layout.bounds,
-    size: layout.fontSize,
-  });
 }
 
 function renderTable(area: Area, contents: Table) {
@@ -168,15 +124,15 @@ function renderTable(area: Area, contents: Table) {
           : style === 'sub-header'
             ? cfg.colors.table.subheader
             : undefined;
-      currentPage.drawRectangle({
+      renderer.drawRectangle({
         ...cellArea,
         borderWidth: 1,
-        borderColor: hex_to_rgb(cfg.colors.table.border),
-        color: colors ? hex_to_rgb(colors.background) : undefined,
+        borderColor: cfg.colors.table.border,
+        backgroundColor: colors ? colors.background : undefined,
       });
       if (cell) {
-        currentPage.setFontColor(hex_to_rgb(colors ? colors.text : '#000000'));
-        const cellTextArea = applyMarginToArea(cellArea, {
+        renderer.setFontColor(colors ? colors.text : '#000000');
+        const cellTextArea = renderer.applyMarginToArea(cellArea, {
           top: 0,
           bottom: 0,
           left: mm_to_points(2),

@@ -85,6 +85,15 @@ export interface MarginValues {
   left: number;
 }
 
+export interface BorderStyle {
+  borderColor: string;
+  borderWidth: number;
+}
+
+export interface BackgroundStyle {
+  backgroundColor: string;
+}
+
 export interface Agendamento3x3Config {
   kind: 'agendamento3x3';
   rowsPerTime: number;
