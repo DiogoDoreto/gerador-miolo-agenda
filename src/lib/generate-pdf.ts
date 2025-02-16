@@ -10,7 +10,6 @@ import {
   type Content,
   type Flex,
   type Page,
-  type RecursivePages,
   type Table,
   type TableCell,
   type TableColumn,
@@ -19,16 +18,6 @@ import { mm_to_points } from './units.js';
 import { PdfRenderer } from './renderer/pdf.js';
 import type { BaseRenderer } from './renderer/base.js';
 import { CanvasRenderer } from './renderer/canvas.js';
-
-function renderPages(pages: RecursivePages) {
-  if (Array.isArray(pages)) {
-    for (const page of pages) {
-      renderPages(page);
-    }
-  } else {
-    renderPage(pages);
-  }
-}
 
 let renderer: BaseRenderer;
 let cfg: Config;
@@ -57,7 +46,9 @@ export async function generatePdf(config: Config) {
   renderer = pdf;
   const pages = generatePages(config);
   try {
-    renderPages(pages);
+    for (const page of pages) {
+      renderPage(page);
+    }
   } catch (err) {
     console.error('Error while rendering pages', pages);
     throw err;

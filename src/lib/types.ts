@@ -66,8 +66,6 @@ export interface Page {
   contents?: Content;
 }
 
-export type RecursivePages = Page | RecursivePages[];
-
 export interface Coordinate {
   x: number;
   y: number;
