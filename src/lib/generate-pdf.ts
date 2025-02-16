@@ -9,7 +9,6 @@ import {
   type Config,
   type Content,
   type Flex,
-  type MarginValues,
   type Page,
   type RecursivePages,
   type Table,
@@ -19,6 +18,7 @@ import {
 import { mm_to_points } from './units.js';
 import { PdfRenderer } from './renderer/pdf.js';
 import type { BaseRenderer } from './renderer/base.js';
+import { CanvasRenderer } from './renderer/canvas.js';
 
 function renderPages(pages: RecursivePages) {
   if (Array.isArray(pages)) {
@@ -63,6 +63,23 @@ export async function generatePdf(config: Config) {
     throw err;
   }
   return pdf.doc?.saveAsBase64({ dataUri: true });
+}
+
+export function renderCanvas(context: CanvasRenderingContext2D, config: Config, pages: Page[]) {
+  const canvas = new CanvasRenderer(config, context);
+  cfg = config;
+  renderer = canvas;
+  const [pageWidth, pageHeight] = canvas.scale(config.page.size);
+  const canvasPaddingX = (context.canvas.width - pageWidth * 2) / 3;
+  const canvasPaddingY = (context.canvas.height - pageHeight) / 2;
+  if (pages[0]) {
+    canvas.setAnchor({ x: canvasPaddingX, y: canvasPaddingY });
+    renderPage(pages[0]);
+  }
+  if (pages[1]) {
+    canvas.setAnchor({ x: canvasPaddingX * 2 + pageWidth, y: canvasPaddingY });
+    renderPage(pages[1]);
+  }
 }
 
 function renderContents(area: Area, contents: Content) {
@@ -113,7 +130,7 @@ function renderTable(area: Area, contents: Table) {
     for (let row = 0; row < contents.rowCount; row++) {
       const cellArea = {
         ...colArea,
-        y: area.y + area.height - rowHeight - row * rowHeight,
+        y: area.y + row * rowHeight,
         height: rowHeight,
       };
       const cell = colData[row];
@@ -236,20 +253,11 @@ function renderFlex(area: Area, { direction, contents, gap = 0 }: Flex) {
   const flexItemsCount = contentSizes.filter((h) => h === 0).length;
   const flexSize = flexItemsCount ? totalFlexSize / flexItemsCount : 0;
   let offsetAcc = area[offsetProp];
-  function renderItem(i: number) {
+  for (let i = 0; i < contents.length; i++) {
     const c = contents[i];
     const contentSize = contentSizes[i] || flexSize;
     renderContents({ ...area, [sizeProp]: contentSize, [offsetProp]: offsetAcc }, c);
     offsetAcc += contentSize + gap;
-  }
-  if (direction === 'column') {
-    for (let i = contents.length - 1; i >= 0; i--) {
-      renderItem(i);
-    }
-  } else {
-    for (let i = 0; i < contents.length; i++) {
-      renderItem(i);
-    }
   }
 }
 

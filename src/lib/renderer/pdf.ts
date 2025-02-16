@@ -42,6 +42,10 @@ export class PdfRenderer extends BaseRenderer {
     if (this.lastPageSide !== page.side) this.createPage(page);
   }
 
+  private flipY(y: number): number {
+    return this.cfg.page.size[1] - y;
+  }
+
   renderTextbox(area: Area, contents: Textbox) {
     // TODO N/S alignment
     const layout = layoutSinglelineText(contents.text, {
@@ -51,7 +55,10 @@ export class PdfRenderer extends BaseRenderer {
           : contents.alignment === Alignment.E
             ? TextAlignment.Right
             : TextAlignment.Center,
-      bounds: area,
+      bounds: {
+        ...area,
+        y: this.flipY(area.y) - area.height,
+      },
       font: this.font,
       fontSize: contents.fitText ? undefined : 10,
     });
@@ -73,7 +80,7 @@ export class PdfRenderer extends BaseRenderer {
   }: Area & Partial<BackgroundStyle> & Partial<BorderStyle>): void {
     this.pdfPage.drawRectangle({
       x,
-      y,
+      y: this.flipY(y) - height,
       width,
       height,
       borderWidth,

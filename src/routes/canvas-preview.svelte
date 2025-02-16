@@ -1,6 +1,7 @@
 <script lang="ts">
   import { generatePages } from '$lib/generate-pages.js';
-  import { renderCanvas } from '$lib/render-canvas.js';
+    import { renderCanvas } from '$lib/generate-pdf.js';
+ // import { renderCanvas } from '$lib/render-canvas.js';
   import type { Config } from '$lib/types.js';
   import { config } from './form-state.svelte.js';
 
