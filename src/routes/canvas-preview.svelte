@@ -1,7 +1,6 @@
 <script lang="ts">
   import { generatePages } from '$lib/generate-pages.js';
-    import { renderCanvas } from '$lib/generate-pdf.js';
- // import { renderCanvas } from '$lib/render-canvas.js';
+  import { DocumentRenderer } from '$lib/renderer/document.js';
   import type { Config } from '$lib/types.js';
   import { config } from './form-state.svelte.js';
 
@@ -12,20 +11,23 @@
   const { class: className }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined;
+  let context = $derived(canvas?.getContext('2d'));
   let size = $state({ width: 0, height: 0 });
 
+  let cfg = $derived($state.snapshot(config) as Config);
+  let pages = $derived(generatePages(cfg));
+
   $effect(() => {
-    const t = (function (cfg) {
-      return setTimeout(() => {
-        const ctx = canvas?.getContext('2d');
-        if (!ctx || !canvas) return;
-        canvas.width = size.width;
-        canvas.height = size.height;
-        const pages = generatePages(cfg);
-        renderCanvas(ctx, cfg, [pages[1], pages[2]]);
-      }, 500);
-    })($state.snapshot(config) as Config);
-    return () => clearTimeout(t);
+    if (!canvas) return;
+    canvas.width = size.width;
+    canvas.height = size.height;
+  });
+
+  $effect(() => {
+    // size has to be mentioned to re-run the effect on its change
+    if (!context || !size) return;
+    const docRenderer = new DocumentRenderer(cfg, 'canvas', context);
+    docRenderer.renderCanvas(pages);
   });
 
   $effect(() => {
