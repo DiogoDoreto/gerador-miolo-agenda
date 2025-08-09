@@ -118,18 +118,18 @@ function renderContents(area: Area, contents: Content) {
     }
 }
 
-function renderTextbox(area: Area, arg1: { kind: string; text: string; alignment: Alignment }) {
+function renderTextbox(_area: Area, _arg1: { kind: string; text: string; alignment: Alignment }) {
   console.log('renderTextbox not implemented.');
 }
 
-function renderFlex(area: Area, contents: Flex) {
+function renderFlex(_area: Area, _contents: Flex) {
   console.log('renderFlex not implemented.');
 }
 
-function renderTable(area: Area, contents: Table) {
+function renderTable(_area: Area, _contents: Table) {
   console.log('renderTable not implemented.');
 }
 
-function renderCalendar(area: Area, contents: Calendar) {
+function renderCalendar(_area: Area, _contents: Calendar) {
   console.log('renderCalendar not implemented.');
 }
