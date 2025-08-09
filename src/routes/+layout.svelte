@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>Gerador de Miolo de Agenda</title>
+  <title>Gerador de Miolo de Agenda</title>
 </svelte:head>
 
 {@render children()}
