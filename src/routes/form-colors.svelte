@@ -1,11 +1,11 @@
 <script>
-  import { ButtonGroup, Card, Heading, Input, InputAddon } from 'flowbite-svelte';
+  import { ButtonGroup, Card, Input, InputAddon } from 'flowbite-svelte';
   import { config } from './form-state.svelte';
 </script>
 
 <div class="space-y-4">
-  <Card>
-    <Heading tag="h3" class="mb-2 text-xl">Tabela</Heading>
+  <Card class="p-4">
+    <h3 class="mb-2 text-xl">Tabela</h3>
 
     <div class="flex flex-wrap gap-2">
       <label>
@@ -17,8 +17,8 @@
     </div>
   </Card>
 
-  <Card>
-    <Heading tag="h3" class="mb-2 text-xl">Tabela > Cabeçalho</Heading>
+  <Card class="p-4">
+    <h3 class="mb-2 text-xl">Tabela > Cabeçalho</h3>
 
     <div class="flex flex-wrap gap-2">
       <label>
@@ -40,8 +40,8 @@
     </div>
   </Card>
 
-  <Card>
-    <Heading tag="h3" class="mb-2 text-xl">Tabela > Sub-Cabeçalho</Heading>
+  <Card class="p-4">
+    <h3 class="mb-2 text-xl">Tabela > Sub-Cabeçalho</h3>
 
     <div class="flex flex-wrap gap-2">
       <label>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Agendamento3x3Config } from '$lib/types.js';
-  import { Label, NumberInput, Textarea } from 'flowbite-svelte';
+  import { Label, Input, Textarea } from 'flowbite-svelte';
 
   interface Props {
     value?: Agendamento3x3Config;
@@ -35,7 +35,7 @@
 <div class="space-y-4">
   <Label>
     Linhas entre horários:
-    <NumberInput min={1} bind:value={formValue.rowsPerTime} />
+    <Input type="number" min={1} bind:value={formValue.rowsPerTime} />
   </Label>
 
   <Label>

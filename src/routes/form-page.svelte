@@ -10,16 +10,26 @@
     ArrowUpOutline,
   } from 'flowbite-svelte-icons';
 
-  const pages = [
-    { value: PageSizes.A5, name: 'A5' },
-    { value: PageSizes.A4, name: 'A4' },
-  ];
+  const PageNameToSize = {
+    A4: PageSizes.A4,
+    A5: PageSizes.A5,
+  } as const;
+
+  const pageItems = Array.from(Object.keys(PageNameToSize)).map((p) => ({ name: p, value: p }));
+
+  type PageName = keyof typeof PageNameToSize;
+  let selectedPage = $state<PageName>('A5');
+
+  function updatePage(page: PageName) {
+    selectedPage = page;
+    config.page.size = PageNameToSize[page];
+  }
 </script>
 
 <div class="space-y-6">
   <Label>
     Tamanho da página:
-    <Select items={pages} bind:value={config.page.size} />
+    <Select items={pageItems} bind:value={() => selectedPage, updatePage} />
   </Label>
 
   <div class="space-y-2">

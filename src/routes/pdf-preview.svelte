@@ -42,12 +42,12 @@
 
 <iframe class={['h-screen', classes]} {src} title="Agenda"></iframe>
 {#if processing}
-  <Card class="absolute left-4 top-4 w-fit opacity-90" padding="sm">
+  <Card class="absolute top-4 left-4 w-fit opacity-90" padding="sm">
     <Spinner />
   </Card>
 {/if}
 {#if errorMsg}
-  <Alert border color="red" class="absolute left-4 top-4 w-fit opacity-90" padding="sm">
+  <Alert border color="red" class="absolute top-4 left-4 w-fit opacity-90" padding="sm">
     <BugOutline slot="icon" />
     {errorMsg}
   </Alert>
