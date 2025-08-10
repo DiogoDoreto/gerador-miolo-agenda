@@ -100,7 +100,7 @@ function generatePagesForMonth(days: Date[]) {
       contents: {
         kind: 'calendar',
         year: days[0].getUTCFullYear(),
-        month: days[0].getUTCDate(),
+        month: 1 + days[0].getUTCMonth(),
       },
     },
   ];
