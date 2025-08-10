@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "flowbite-svelte": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1754548151,
+        "narHash": "sha256-X3LNABJamXVMytMctUmpKTBHWXFT4Y45a8Iw8IiSvGY=",
+        "owner": "themesberg",
+        "repo": "flowbite-svelte",
+        "rev": "9dbd5d8ae0584b652e658a93543aa3cec344daac",
+        "type": "github"
+      },
+      "original": {
+        "owner": "themesberg",
+        "ref": "v1.11.4",
+        "repo": "flowbite-svelte",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1754651824,
@@ -16,6 +33,7 @@
     },
     "root": {
       "inputs": {
+        "flowbite-svelte": "flowbite-svelte",
         "nixpkgs": "nixpkgs",
         "utils": "utils"
       }
