@@ -35,7 +35,43 @@
       "inputs": {
         "flowbite-svelte": "flowbite-svelte",
         "nixpkgs": "nixpkgs",
+        "svelte": "svelte",
+        "sveltekit": "sveltekit",
         "utils": "utils"
+      }
+    },
+    "svelte": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1754503578,
+        "narHash": "sha256-E0UjWGjnIacebRgMf10VzBCCiRm8uko8oyB6r6p+AnA=",
+        "owner": "sveltejs",
+        "repo": "svelte",
+        "rev": "ec03c7ac366ee37568f5d9d600d61ac5f842155d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sveltejs",
+        "ref": "svelte@5.38.0",
+        "repo": "svelte",
+        "type": "github"
+      }
+    },
+    "sveltekit": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1754594762,
+        "narHash": "sha256-KCudllufcXEWQymOx6bG9egAq4e2Ualvr9bIrFyz9oA=",
+        "owner": "sveltejs",
+        "repo": "kit",
+        "rev": "0548b159653b0d8966bac465d4ba717f3e0c8ec1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sveltejs",
+        "ref": "@sveltejs/kit@2.27.3",
+        "repo": "kit",
+        "type": "github"
       }
     },
     "systems": {
