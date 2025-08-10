@@ -35,6 +35,7 @@ export const config: Config = $state({
     },
   },
   data: {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     year: new Date().getUTCFullYear(),
     showCalendarPages: true,
     locale: ptBR,

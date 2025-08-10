@@ -14,7 +14,7 @@
   <Tabs tabStyle="underline">
     <TabItem open>
       {#snippet titleSlot()}
-        <div slot="title" class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <ClipboardOutline />
           Dados
         </div>
@@ -23,7 +23,7 @@
     </TabItem>
     <TabItem>
       {#snippet titleSlot()}
-        <div slot="title" class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <PaletteOutline />
           Cores
         </div>
@@ -32,7 +32,7 @@
     </TabItem>
     <TabItem>
       {#snippet titleSlot()}
-        <div slot="title" class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <BookOpenOutline />
           Página
         </div>
