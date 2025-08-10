@@ -80,7 +80,7 @@
 <div
   class="group relative z-1 flex w-full flex-col items-center"
   role="region"
-  aria-label="Pagination navigation"
+  aria-label="Navegação de páginas"
   bind:this={barRef}
 >
   <div class="flex w-full items-center justify-center gap-4 p-3 shadow-md">
@@ -89,19 +89,19 @@
       disabled={prevDisabled}
       class="rounded border px-2 py-1 disabled:opacity-50"
     >
-      Previous
+      Anterior
     </Button>
     <span>
       {showingStart === showingEnd
-        ? `Showing page ${showingStart} of ${totalPages}`
-        : `Showing pages ${showingStart}–${showingEnd} of ${totalPages}`}
+        ? `Mostrando página ${showingStart} de ${totalPages}`
+        : `Mostrando páginas ${showingStart}–${showingEnd} de ${totalPages}`}
     </span>
     <Button
       onclick={nextPage}
       disabled={nextDisabled}
       class="rounded border px-2 py-1 disabled:opacity-50"
     >
-      Next
+      Próxima
     </Button>
   </div>
 
@@ -117,6 +117,6 @@
     aria-valuenow={currentPage + 1}
     aria-valuemin={1}
     aria-valuemax={totalPages}
-    aria-label="Drag to change page"
+    aria-label="Arraste para mudar de página"
   ></div>
 </div>
