@@ -2,6 +2,7 @@
   import { generatePages } from '$lib/generate-pages.js';
   import { DocumentRenderer } from '$lib/renderer/document.js';
   import type { Config } from '$lib/types.js';
+  import { Button } from 'flowbite-svelte';
   import { config } from './form-state.svelte.js';
 
   interface Props {
@@ -17,17 +18,13 @@
   let cfg = $derived($state.snapshot(config) as Config);
   let pages = $derived(generatePages(cfg));
 
-  let pageIndex = $state(0);
-  const pagesPerView = 2;
+  let groupIndex = $state(0);
+  let maxGroup = $derived(Math.max(0, Math.ceil((pages.length - 1) / 2)));
 
-  // Clamp pageIndex to valid range if pages change
+  // Clamp groupIndex to valid range if pages change
   $effect(() => {
-    if (pageIndex > pages.length - 1) {
-      pageIndex = Math.max(
-        0,
-        pages.length -
-          (pages.length % pagesPerView === 0 ? pagesPerView : pages.length % pagesPerView)
-      );
+    if (groupIndex > maxGroup) {
+      groupIndex = maxGroup;
     }
   });
 
@@ -41,8 +38,13 @@
     // size has to be mentioned to re-run the effect on its change
     if (!context || !size) return;
     const docRenderer = new DocumentRenderer(cfg, 'canvas', context);
-    // Only render the current slice of pages
-    docRenderer.renderCanvas(pages.slice(pageIndex, pageIndex + pagesPerView));
+    // Render logic: first page alone, then pairs
+    if (groupIndex === 0) {
+      docRenderer.renderCanvas(undefined, pages[0]);
+    } else {
+      const pageIndex = 1 + 2 * (groupIndex - 1);
+      docRenderer.renderCanvas(pages[pageIndex], pages[pageIndex + 1]);
+    }
   });
 
   $effect(() => {
@@ -61,42 +63,42 @@
   });
 
   function prevPage() {
-    pageIndex = Math.max(0, pageIndex - pagesPerView);
+    groupIndex = Math.max(0, groupIndex - 1);
   }
   function nextPage() {
-    pageIndex = Math.min(
-      pages.length -
-        (pages.length % pagesPerView === 0 ? pagesPerView : pages.length % pagesPerView),
-      pageIndex + pagesPerView
-    );
-    if (pageIndex >= pages.length)
-      pageIndex =
-        pages.length -
-        (pages.length % pagesPerView === 0 ? pagesPerView : pages.length % pagesPerView);
+    groupIndex = Math.min(maxGroup, groupIndex + 1);
   }
 
-  let showingStart = $derived(pageIndex + 1);
-  let showingEnd = $derived(Math.min(pageIndex + pagesPerView, pages.length));
+  let showingStart = $derived(groupIndex === 0 ? 1 : 2 + (groupIndex - 1) * 2);
+  let showingEnd = $derived(
+    groupIndex === 0 ? 1 : Math.min(3 + (groupIndex - 1) * 2, pages.length)
+  );
   let totalPages = $derived(pages.length);
-  let prevDisabled = $derived(pageIndex === 0);
-  let nextDisabled = $derived(pageIndex + pagesPerView >= pages.length);
+  let prevDisabled = $derived(groupIndex === 0);
+  let nextDisabled = $derived(groupIndex >= maxGroup);
 </script>
 
 <div class={['flex flex-col', className]}>
-  <div class="mb-2 flex items-center gap-4">
-    <button
+  <div class="z-1 flex items-center justify-center gap-4 p-2 shadow-md">
+    <Button
       onclick={prevPage}
       disabled={prevDisabled}
-      class="rounded border px-2 py-1 disabled:opacity-50">Previous</button
+      class="rounded border px-2 py-1 disabled:opacity-50"
     >
+      Previous
+    </Button>
     <span>
-      Showing pages {showingStart}{showingEnd > showingStart ? `–${showingEnd}` : ''} of {totalPages}
+      {showingStart === showingEnd
+        ? `Showing page ${showingStart} of ${totalPages}`
+        : `Showing pages ${showingStart}–${showingEnd} of ${totalPages}`}
     </span>
-    <button
+    <Button
       onclick={nextPage}
       disabled={nextDisabled}
-      class="rounded border px-2 py-1 disabled:opacity-50">Next</button
+      class="rounded border px-2 py-1 disabled:opacity-50"
     >
+      Next
+    </Button>
   </div>
 
   <canvas class={['block flex-1']} bind:this={canvas}></canvas>

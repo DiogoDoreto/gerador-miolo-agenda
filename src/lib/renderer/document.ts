@@ -40,20 +40,20 @@ export class DocumentRenderer {
     }
   }
 
-  renderCanvas(pages: Page[]) {
+  renderCanvas(left: Page | undefined, right: Page | undefined) {
     if (!(this.renderer instanceof CanvasRenderer)) {
       throw new Error('Wrong target: ' + this.target);
     }
     const [pageWidth, pageHeight] = this.renderer.scale(this.cfg.page.size);
     const canvasPaddingX = (this.renderer.ctx.canvas.width - pageWidth * 2) / 3;
     const canvasPaddingY = (this.renderer.ctx.canvas.height - pageHeight) / 2;
-    if (pages[0]) {
+    if (left) {
       this.renderer.setAnchor({ x: canvasPaddingX, y: canvasPaddingY });
-      this.renderPage(pages[0]);
+      this.renderPage(left);
     }
-    if (pages[1]) {
+    if (right) {
       this.renderer.setAnchor({ x: canvasPaddingX * 2 + pageWidth, y: canvasPaddingY });
-      this.renderPage(pages[1]);
+      this.renderPage(right);
     }
   }
 
