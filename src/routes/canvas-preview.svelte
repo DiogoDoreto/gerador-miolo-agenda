@@ -12,23 +12,20 @@
   const { class: className }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined;
-  let context = $derived(canvas?.getContext('2d'));
+  let container: HTMLDivElement | undefined;
   let size = $state({ width: 0, height: 0 });
-
   let cfg = $derived($state.snapshot(config) as Config);
   let pages = $derived(generatePages(cfg));
   let totalPages = $derived(pages.length);
   let currentPage = $state(0);
 
   $effect(() => {
-    if (!canvas) return;
+    if (!canvas || !size) return;
     canvas.width = size.width;
     canvas.height = size.height;
-  });
+    const context = canvas.getContext('2d');
+    if (!context) return;
 
-  $effect(() => {
-    // size has to be mentioned to re-run the effect when it changes
-    if (!context || !size) return;
     const docRenderer = new DocumentRenderer(cfg, 'canvas', context);
     // Render logic: first page alone, then pairs
     if (currentPage === 0) {
@@ -39,17 +36,12 @@
   });
 
   $effect(() => {
-    if (!canvas) return;
-
+    if (!container) return;
     const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect) {
-          size = { width: entry.contentRect.width, height: entry.contentRect.height };
-        }
-      }
+      const { width, height } = entries[0].contentRect;
+      size = { width, height };
     });
-
-    ro.observe(canvas);
+    ro.observe(container);
     return () => ro.disconnect();
   });
 </script>
@@ -57,5 +49,7 @@
 <div class={['flex flex-col', className]}>
   <CanvasPagination bind:currentPage {totalPages} />
 
-  <canvas class={['block flex-1']} bind:this={canvas}></canvas>
+  <div class="relative h-full w-full flex-1" bind:this={container}>
+    <canvas class="absolute inset-0 h-full w-full" bind:this={canvas}></canvas>
+  </div>
 </div>
